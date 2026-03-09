@@ -1,0 +1,23 @@
+0 verbose cli D:\node\node.exe C:\Users\zp\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.10.0
+2 info using node@v22.17.0
+3 silly config load:file:C:\Users\zp\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:F:\work\project\shop\frontend\mobile\.npmrc
+5 silly config load:file:C:\Users\zp\.npmrc
+6 silly config load:file:C:\Users\zp\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:F:\work\project\shop\frontend\mobile\.npm-cache\_logs\2026-03-09T15_41_08_342Z-
+10 verbose logfile F:\work\project\shop\frontend\mobile\.npm-cache\_logs\2026-03-09T15_41_08_342Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly idealTree buildDeps
+14 silly fetch manifest pinia@^3.0.1
+15 silly packumentCache full:https://registry.npmjs.org/pinia cache-miss
+16 http fetch GET https://registry.npmjs.org/pinia attempt 1 failed with EACCES
+17 http fetch GET https://registry.npmjs.org/pinia attempt 2 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/pinia attempt 3 failed with EACCES
+19 silly fetch manifest vue@^3.5.13
+20 silly packumentCache full:https://registry.npmjs.org/vue cache-miss
+21 http fetch GET https://registry.npmjs.org/vue attempt 1 failed with EACCES
+22 http fetch GET https://registry.npmjs.org/vue attempt 2 failed with EACCES

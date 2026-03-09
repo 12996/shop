@@ -1,0 +1,92 @@
+0 verbose cli D:\node\node.exe C:\Users\zp\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.10.0
+2 info using node@v22.17.0
+3 silly config load:file:C:\Users\zp\AppData\Roaming\npm\node_modules\npm\npmrc
+4 silly config load:file:F:\work\project\shop\frontend\mobile\.npmrc
+5 silly config load:file:C:\Users\zp\.npmrc
+6 silly config load:file:C:\Users\zp\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" ".npm-cache"
+9 verbose logfile logs-max:10 dir:F:\work\project\shop\frontend\mobile\.npm-cache\_logs\2026-03-09T15_02_49_003Z-
+10 verbose logfile F:\work\project\shop\frontend\mobile\.npm-cache\_logs\2026-03-09T15_02_49_003Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly idealTree buildDeps
+14 silly fetch manifest pinia@^3.0.1
+15 silly packumentCache full:https://registry.npmjs.org/pinia cache-miss
+16 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with EACCES
+17 http fetch GET https://registry.npmjs.org/pinia attempt 1 failed with EACCES
+18 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with EACCES
+19 http fetch GET https://registry.npmjs.org/pinia attempt 2 failed with EACCES
+20 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with EACCES
+21 http fetch GET https://registry.npmjs.org/pinia attempt 3 failed with EACCES
+22 silly fetch manifest vue@^3.5.13
+23 silly packumentCache full:https://registry.npmjs.org/vue cache-miss
+24 http fetch GET https://registry.npmjs.org/vue attempt 1 failed with EACCES
+25 http fetch GET https://registry.npmjs.org/vue attempt 2 failed with EACCES
+26 http fetch GET https://registry.npmjs.org/vue attempt 3 failed with EACCES
+27 silly fetch manifest vue-router@^4.5.1
+28 silly packumentCache full:https://registry.npmjs.org/vue-router cache-miss
+29 http fetch GET https://registry.npmjs.org/vue-router attempt 1 failed with EACCES
+30 http fetch GET https://registry.npmjs.org/vue-router attempt 2 failed with EACCES
+31 http fetch GET https://registry.npmjs.org/vue-router attempt 3 failed with EACCES
+32 silly fetch manifest @vitejs/plugin-vue@^5.2.1
+33 silly packumentCache full:https://registry.npmjs.org/@vitejs%2fplugin-vue cache-miss
+34 http fetch GET https://registry.npmjs.org/@vitejs%2fplugin-vue attempt 1 failed with EACCES
+35 http fetch GET https://registry.npmjs.org/@vitejs%2fplugin-vue attempt 2 failed with EACCES
+36 http fetch GET https://registry.npmjs.org/@vitejs%2fplugin-vue attempt 3 failed with EACCES
+37 silly fetch manifest typescript@^5.8.2
+38 silly packumentCache full:https://registry.npmjs.org/typescript cache-miss
+39 http fetch GET https://registry.npmjs.org/typescript attempt 1 failed with EACCES
+40 http fetch GET https://registry.npmjs.org/typescript attempt 2 failed with EACCES
+41 http fetch GET https://registry.npmjs.org/typescript attempt 3 failed with EACCES
+42 silly fetch manifest vite@^6.2.0
+43 silly packumentCache full:https://registry.npmjs.org/vite cache-miss
+44 http fetch GET https://registry.npmjs.org/vite attempt 1 failed with EACCES
+45 http fetch GET https://registry.npmjs.org/vite attempt 2 failed with EACCES
+46 http fetch GET https://registry.npmjs.org/vite attempt 3 failed with EACCES
+47 silly placeDep ROOT @vitejs/plugin-vue@ OK for: unmanned-store-mobile@0.0.1 want: ^5.2.1
+48 silly placeDep ROOT pinia@ OK for: unmanned-store-mobile@0.0.1 want: ^3.0.1
+49 silly placeDep ROOT typescript@ OK for: unmanned-store-mobile@0.0.1 want: ^5.8.2
+50 silly placeDep ROOT vite@ OK for: unmanned-store-mobile@0.0.1 want: ^6.2.0
+51 silly placeDep ROOT vue@ OK for: unmanned-store-mobile@0.0.1 want: ^3.5.13
+52 silly placeDep ROOT vue-router@ OK for: unmanned-store-mobile@0.0.1 want: ^4.5.1
+53 verbose type system
+54 verbose stack FetchError: request to https://registry.npmjs.org/@vitejs%2fplugin-vue failed, reason: 
+54 verbose stack     at ClientRequest.<anonymous> (C:\Users\zp\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+54 verbose stack     at ClientRequest.emit (node:events:518:28)
+54 verbose stack     at emitErrorEvent (node:_http_client:104:11)
+54 verbose stack     at _destroy (node:_http_client:898:9)
+54 verbose stack     at onSocketNT (node:_http_client:918:5)
+54 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:91:21)
+55 error code EACCES
+56 error errno EACCES
+57 error FetchError: request to https://registry.npmjs.org/@vitejs%2fplugin-vue failed, reason: 
+57 error     at ClientRequest.<anonymous> (C:\Users\zp\AppData\Roaming\npm\node_modules\npm\node_modules\minipass-fetch\lib\index.js:130:14)
+57 error     at ClientRequest.emit (node:events:518:28)
+57 error     at emitErrorEvent (node:_http_client:104:11)
+57 error     at _destroy (node:_http_client:898:9)
+57 error     at onSocketNT (node:_http_client:918:5)
+57 error     at process.processTicksAndRejections (node:internal/process/task_queues:91:21) {
+57 error   code: 'EACCES',
+57 error   errno: 'EACCES',
+57 error   type: 'system',
+57 error   requiredBy: '.'
+57 error }
+58 error
+58 error The operation was rejected by your operating system.
+58 error It's possible that the file was already in use (by a text editor or antivirus),
+58 error or that you lack permissions to access it.
+58 error
+58 error If you believe this might be a permissions issue, please double-check the
+58 error permissions of the file and its containing directories, or try running
+58 error the command again as root/Administrator.
+59 silly unfinished npm timer reify 1773068569590
+60 silly unfinished npm timer reify:loadTrees 1773068569591
+61 verbose cwd F:\work\project\shop\frontend\mobile
+62 verbose os Windows_NT 10.0.19045
+63 verbose node v22.17.0
+64 verbose npm  v11.10.0
+65 verbose exit 1
+66 verbose code 1
+67 error A complete log of this run can be found in: F:\work\project\shop\frontend\mobile\.npm-cache\_logs\2026-03-09T15_02_49_003Z-debug-0.log
