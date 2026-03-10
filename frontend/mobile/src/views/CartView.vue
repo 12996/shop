@@ -1,54 +1,38 @@
 <template>
-  <div class="page-shell">
-    <main class="page">
-      <header class="topbar">
-        <div>
-          <div class="brand">无人超市</div>
-          <h1 class="page-title">购物车</h1>
-        </div>
-      </header>
+  <div class="page">
+    <section v-if="!authStore.isAuthenticated" class="state-card">
+      <p>请先登录后查看购物车。</p>
+      <RouterLink class="link-button" to="/login">去登录</RouterLink>
+    </section>
 
-      <section v-if="!authStore.isAuthenticated" class="state-card">
-        <p>请先登录后查看购物车。</p>
-        <RouterLink class="link-button" to="/login">去登录</RouterLink>
+    <template v-else>
+      <section v-if="loading" class="state-card">加载中...</section>
+      <section v-else-if="items.length === 0" class="state-card">购物车为空</section>
+
+      <section v-else class="cart-list">
+        <article v-for="item in items" :key="item.id" class="cart-card">
+          <label class="selector">
+            <input :checked="item.selected" type="checkbox" @change="toggleSelected(item.id, item.quantity, !item.selected)" />
+            <span>{{ item.product_name }}</span>
+          </label>
+          <div class="meta">单价：￥{{ item.product_price }}</div>
+          <div class="actions">
+            <div class="quantity">
+              <button :disabled="item.quantity <= 1" @click="changeQuantity(item.id, item.quantity - 1, item.selected)">-</button>
+              <span>{{ item.quantity }}</span>
+              <button @click="changeQuantity(item.id, item.quantity + 1, item.selected)">+</button>
+            </div>
+            <button class="danger" @click="removeItem(item.id)">删除</button>
+          </div>
+        </article>
       </section>
 
-      <template v-else>
-        <section v-if="loading" class="state-card">加载中...</section>
-        <section v-else-if="items.length === 0" class="state-card">购物车为空</section>
+      <section v-if="items.length > 0" class="summary-card">
+        <div>已选金额：￥{{ cartStore.selectedTotal.toFixed(2) }}</div>
+        <button class="primary-button" @click="goToCheckout">去结算</button>
+      </section>
+    </template>
 
-        <section v-else class="cart-list">
-          <article v-for="item in items" :key="item.id" class="cart-card">
-            <label class="selector">
-              <input
-                :checked="item.selected"
-                type="checkbox"
-                @change="toggleSelected(item.id, item.quantity, !item.selected)"
-              />
-              <span>{{ item.product_name }}</span>
-            </label>
-            <div class="meta">单价：￥{{ item.product_price }}</div>
-            <div class="actions">
-              <div class="quantity">
-                <button :disabled="item.quantity <= 1" @click="changeQuantity(item.id, item.quantity - 1, item.selected)">
-                  -
-                </button>
-                <span>{{ item.quantity }}</span>
-                <button @click="changeQuantity(item.id, item.quantity + 1, item.selected)">+</button>
-              </div>
-              <button class="danger" @click="removeItem(item.id)">删除</button>
-            </div>
-          </article>
-        </section>
-
-        <section v-if="items.length > 0" class="summary-card">
-          <div>已选金额：￥{{ cartStore.selectedTotal.toFixed(2) }}</div>
-          <button class="primary-button" @click="goToCheckout">去结算</button>
-        </section>
-      </template>
-    </main>
-
-    <MobileTabBar />
   </div>
 </template>
 
@@ -56,7 +40,6 @@
 import { computed, onMounted, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
-import MobileTabBar from "../components/MobileTabBar.vue";
 import { useAuthStore } from "../stores/auth";
 import { useCartStore } from "../stores/cart";
 
@@ -71,7 +54,6 @@ onMounted(async () => {
   if (!authStore.isAuthenticated) {
     return;
   }
-
   loading.value = true;
   try {
     await cartStore.loadCart();
@@ -99,33 +81,10 @@ async function goToCheckout() {
 </script>
 
 <style scoped>
-.page-shell {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
 .page {
-  padding: 20px 16px 88px;
+  padding: 0 0 88px;
   box-sizing: border-box;
   font-family: sans-serif;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.brand {
-  font-size: 13px;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.page-title {
-  margin: 8px 0 0;
-  font-size: 26px;
-  color: #111827;
 }
 
 .state-card,

@@ -1,65 +1,47 @@
 <template>
-  <div class="page-shell">
-    <main class="page">
-      <header class="topbar">
-        <div>
-          <div class="brand">无人超市</div>
-          <h1 class="page-title">我的订单</h1>
-        </div>
-      </header>
+  <div class="page">
+    <section v-if="!authStore.isAuthenticated" class="state-card">
+      <p>请先登录后查看订单。</p>
+      <RouterLink class="link-button" to="/login">去登录</RouterLink>
+    </section>
 
-      <section v-if="!authStore.isAuthenticated" class="state-card">
-        <p>请先登录后查看订单。</p>
-        <RouterLink class="link-button" to="/login">去登录</RouterLink>
+    <template v-else>
+      <section class="tabs">
+        <button
+          v-for="item in statusTabs"
+          :key="item.value"
+          class="tab"
+          :class="{ active: activeStatus === item.value }"
+          @click="activeStatus = item.value"
+        >
+          {{ item.label }}
+        </button>
       </section>
 
-      <template v-else>
-        <section class="tabs">
-          <button
-            v-for="item in statusTabs"
-            :key="item.value"
-            class="tab"
-            :class="{ active: activeStatus === item.value }"
-            @click="activeStatus = item.value"
-          >
-            {{ item.label }}
-          </button>
-        </section>
+      <section v-if="loading" class="state-card">加载中...</section>
+      <section v-else-if="filteredOrders.length === 0" class="state-card">暂无订单</section>
 
-        <section v-if="loading" class="state-card">加载中...</section>
-        <section v-else-if="filteredOrders.length === 0" class="state-card">暂无订单</section>
+      <section v-else class="order-list">
+        <article v-for="order in filteredOrders" :key="order.id" class="order-card">
+          <div class="order-header">
+            <span>{{ order.order_number }}</span>
+            <span class="status">{{ statusText(order.status) }}</span>
+          </div>
+          <div class="order-meta">金额：￥{{ order.total_amount }}</div>
+          <div class="order-meta">时间：{{ formatTime(order.created_at) }}</div>
+          <div class="order-meta">商品：{{ order.items.map((item) => item.product_name).join("、") }}</div>
+          <div class="actions">
+            <button v-if="order.status === 'pending_payment'" class="secondary-button" @click="retryPay(order.id)">
+              继续支付
+            </button>
+            <button v-if="order.status === 'pending_payment'" class="danger-button" @click="cancelCurrentOrder(order.id)">
+              取消订单
+            </button>
+          </div>
+        </article>
+      </section>
+    </template>
 
-        <section v-else class="order-list">
-          <article v-for="order in filteredOrders" :key="order.id" class="order-card">
-            <div class="order-header">
-              <span>{{ order.order_number }}</span>
-              <span class="status">{{ statusText(order.status) }}</span>
-            </div>
-            <div class="order-meta">金额：￥{{ order.total_amount }}</div>
-            <div class="order-meta">时间：{{ formatTime(order.created_at) }}</div>
-            <div class="order-meta">商品：{{ order.items.map((item) => item.product_name).join("、") }}</div>
-            <div class="actions">
-              <button
-                v-if="order.status === 'pending_payment'"
-                class="secondary-button"
-                @click="retryPay(order.id)"
-              >
-                继续支付
-              </button>
-              <button
-                v-if="order.status === 'pending_payment'"
-                class="danger-button"
-                @click="cancelCurrentOrder(order.id)"
-              >
-                取消订单
-              </button>
-            </div>
-          </article>
-        </section>
-      </template>
-    </main>
-
-    <MobileTabBar />
   </div>
 </template>
 
@@ -68,7 +50,6 @@ import { computed, onMounted, ref } from "vue";
 import { RouterLink } from "vue-router";
 
 import { cancelOrder, fetchOrders, payOrder, type Order } from "../api/orders";
-import MobileTabBar from "../components/MobileTabBar.vue";
 import { useAuthStore } from "../stores/auth";
 
 const authStore = useAuthStore();
@@ -85,16 +66,13 @@ const statusTabs = [
 ];
 
 const filteredOrders = computed(() =>
-  activeStatus.value === "all"
-    ? orders.value
-    : orders.value.filter((order) => order.status === activeStatus.value),
+  activeStatus.value === "all" ? orders.value : orders.value.filter((order) => order.status === activeStatus.value),
 );
 
 onMounted(async () => {
   if (!authStore.isAuthenticated) {
     return;
   }
-
   loading.value = true;
   try {
     orders.value = await fetchOrders();
@@ -129,31 +107,10 @@ function formatTime(value: string) {
 </script>
 
 <style scoped>
-.page-shell {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
 .page {
-  padding: 20px 16px 88px;
+  padding: 0 0 88px;
   box-sizing: border-box;
   font-family: sans-serif;
-}
-
-.topbar {
-  margin-bottom: 16px;
-}
-
-.brand {
-  font-size: 13px;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.page-title {
-  margin: 8px 0 0;
-  font-size: 26px;
-  color: #111827;
 }
 
 .tabs {

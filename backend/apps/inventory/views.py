@@ -1,15 +1,15 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.common.permissions import IsMerchant
+from apps.common.views import LoggedAPIView
 from apps.products.models import Product
 
 from .models import Stock, StockLog
 from .serializers import AdjustStockSerializer, StockSerializer
 
 
-class InventoryListView(APIView):
+class InventoryListView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def get(self, _request):
@@ -17,7 +17,7 @@ class InventoryListView(APIView):
         return Response(StockSerializer(stocks, many=True).data)
 
 
-class InventoryAdjustView(APIView):
+class InventoryAdjustView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def post(self, request, product_id):

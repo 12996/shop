@@ -20,9 +20,9 @@
 
 ### 2.1 启动服务
 
-- 后端：`conda run -n shop python .\backend\manage.py runserver`
-- 移动端 H5：`cd frontend/mobile && npm run dev`
-- Web 端：`cd frontend/web && npm run dev`
+- 后端：`conda run -n shop python .\backend\manage.py runserver 127.0.0.1:18000`
+- 移动端 H5：`cd frontend/mobile && npm run dev -- --host 127.0.0.1 --port 5173`
+- Web 端：`cd frontend/web && npm run dev -- --host 127.0.0.1 --port 5174`
 
 ### 2.2 准备数据
 
@@ -30,8 +30,7 @@
 
 - 1 个普通用户账号
 - 1 个商家账号
-- 2 到 3 个商品分类
-- 3 到 5 个已上架商品
+- 首次执行数据库迁移后，系统会默认写入演示商品分类、商品和库存数据
 - 1 条已发布公告
 - 2 到 3 个推荐商品
 

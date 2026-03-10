@@ -5,15 +5,18 @@ from apps.inventory.models import Stock
 from apps.products.models import Category, Product
 
 
+DEMO_PRODUCT_NAME = "\u7edf\u4e00\u51b0\u7ea2\u8336 500ml"
+
+
 class ProductApiTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.drink_category = Category.objects.create(name="饮料", sort_order=1)
-        self.snack_category = Category.objects.create(name="零食", sort_order=2)
+        self.drink_category = Category.objects.create(name="楗枡", sort_order=1)
+        self.snack_category = Category.objects.create(name="闆堕", sort_order=2)
 
         self.cola = Product.objects.create(
             category=self.drink_category,
-            name="可口可乐 500ml",
+            name="鍙彛鍙箰 500ml",
             price="3.50",
             status=Product.STATUS_ON_SHELF,
         )
@@ -21,7 +24,7 @@ class ProductApiTest(TestCase):
 
         self.chips = Product.objects.create(
             category=self.snack_category,
-            name="原味薯片",
+            name="鍘熷懗钖墖",
             price="6.00",
             status=Product.STATUS_OFF_SHELF,
         )
@@ -31,23 +34,27 @@ class ProductApiTest(TestCase):
         response = self.client.get("/api/categories")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        category_names = {item["name"] for item in response.json()}
+        self.assertIn(self.drink_category.name, category_names)
+        self.assertIn(self.snack_category.name, category_names)
 
     def test_list_products_only_returns_on_shelf_products(self):
         response = self.client.get("/api/products")
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        self.assertEqual(len(payload), 1)
-        self.assertEqual(payload[0]["name"], "可口可乐 500ml")
-        self.assertEqual(payload[0]["stock_quantity"], 10)
+        product_names = {item["name"] for item in payload}
+        self.assertIn("鍙彛鍙箰 500ml", product_names)
+        self.assertNotIn("鍘熷懗钖墖", product_names)
+        cola_payload = next(item for item in payload if item["id"] == self.cola.id)
+        self.assertEqual(cola_payload["stock_quantity"], 10)
 
     def test_list_products_supports_category_filter_and_keyword_search(self):
-        response = self.client.get("/api/products", {"category_id": self.drink_category.id, "keyword": "可乐"})
+        response = self.client.get("/api/products", {"category_id": self.drink_category.id, "keyword": "鍙箰"})
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        self.assertEqual(len(payload), 1)
+        self.assertGreaterEqual(len(payload), 1)
         self.assertEqual(payload[0]["id"], self.cola.id)
 
     def test_product_detail_returns_stock_information(self):
@@ -55,5 +62,24 @@ class ProductApiTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         payload = response.json()
-        self.assertEqual(payload["name"], "可口可乐 500ml")
+        self.assertEqual(payload["name"], "鍙彛鍙箰 500ml")
         self.assertEqual(payload["stock_quantity"], 10)
+
+    def test_seeded_demo_products_are_visible_in_public_product_list(self):
+        response = self.client.get("/api/products")
+
+        self.assertEqual(response.status_code, 200)
+        product_names = {item["name"] for item in response.json()}
+        self.assertIn(DEMO_PRODUCT_NAME, product_names)
+
+    def test_product_api_emits_request_and_response_logs(self):
+        with self.assertLogs("apps.api", level="INFO") as captured:
+            response = self.client.get("/api/products")
+
+        self.assertEqual(response.status_code, 200)
+        output = "\n".join(captured.output)
+        self.assertIn("http_request", output)
+        self.assertIn("http_response", output)
+        self.assertIn("method=GET", output)
+        self.assertIn("path=/api/products", output)
+        self.assertIn("status_code=200", output)

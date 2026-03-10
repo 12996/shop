@@ -1,16 +1,16 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.common.permissions import IsMerchant
+from apps.common.views import LoggedAPIView
 
 from .models import Order
 from .serializers import AdminOrderSerializer, OrderSerializer
 from .services import cancel_order, complete_order, create_order_from_cart, pay_order
 
 
-class OrderListCreateView(APIView):
+class OrderListCreateView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -26,7 +26,7 @@ class OrderListCreateView(APIView):
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
 
 
-class OrderDetailView(APIView):
+class OrderDetailView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, order_id):
@@ -34,7 +34,7 @@ class OrderDetailView(APIView):
         return Response(OrderSerializer(order).data)
 
 
-class OrderCancelView(APIView):
+class OrderCancelView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, order_id):
@@ -50,7 +50,7 @@ class OrderCancelView(APIView):
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 
 
-class OrderPayView(APIView):
+class OrderPayView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, order_id):
@@ -71,7 +71,7 @@ class OrderPayView(APIView):
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 
 
-class AdminOrderListView(APIView):
+class AdminOrderListView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated, IsMerchant]
 
     def get(self, request):
@@ -82,7 +82,7 @@ class AdminOrderListView(APIView):
         return Response(AdminOrderSerializer(orders, many=True).data)
 
 
-class AdminOrderDetailView(APIView):
+class AdminOrderDetailView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated, IsMerchant]
 
     def get(self, request, order_id):
@@ -93,7 +93,7 @@ class AdminOrderDetailView(APIView):
         return Response(AdminOrderSerializer(order).data)
 
 
-class AdminOrderCompleteView(APIView):
+class AdminOrderCompleteView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated, IsMerchant]
 
     def post(self, request, order_id):

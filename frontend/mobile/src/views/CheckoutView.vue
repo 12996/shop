@@ -1,51 +1,42 @@
 <template>
-  <div class="page-shell">
-    <main class="page">
-      <header class="topbar">
-        <div>
-          <div class="brand">无人超市</div>
-          <h1 class="page-title">确认订单</h1>
-        </div>
-      </header>
+  <div class="page">
+    <section v-if="!authStore.isAuthenticated" class="state-card">
+      <p>请先登录后结算。</p>
+      <RouterLink class="link-button" to="/login">去登录</RouterLink>
+    </section>
 
-      <section v-if="!authStore.isAuthenticated" class="state-card">
-        <p>请先登录后结算。</p>
-        <RouterLink class="link-button" to="/login">去登录</RouterLink>
-      </section>
+    <template v-else>
+      <section v-if="loading" class="state-card">加载中...</section>
+      <section v-else-if="!preview || preview.items.length === 0" class="state-card">暂无可结算商品</section>
 
       <template v-else>
-        <section v-if="loading" class="state-card">加载中...</section>
-        <section v-else-if="!preview || preview.items.length === 0" class="state-card">暂无可结算商品</section>
+        <section class="summary-card">
+          <div class="section-title">结算商品</div>
+          <div v-for="item in preview.items" :key="item.id" class="checkout-item">
+            <div>{{ item.product_name }}</div>
+            <div>x{{ item.quantity }}</div>
+            <div>￥{{ item.product_price }}</div>
+          </div>
+        </section>
 
-        <template v-else>
-          <section class="summary-card">
-            <div class="section-title">结算商品</div>
-            <div v-for="item in preview.items" :key="item.id" class="checkout-item">
-              <div>{{ item.product_name }}</div>
-              <div>x{{ item.quantity }}</div>
-              <div>￥{{ item.product_price }}</div>
-            </div>
-          </section>
+        <section class="summary-card">
+          <div class="section-title">支付方式</div>
+          <label v-for="item in paymentOptions" :key="item.value" class="payment-option">
+            <input v-model="paymentMethod" type="radio" :value="item.value" />
+            <span>{{ item.label }}</span>
+          </label>
+        </section>
 
-          <section class="summary-card">
-            <div class="section-title">支付方式</div>
-            <label v-for="item in paymentOptions" :key="item.value" class="payment-option">
-              <input v-model="paymentMethod" type="radio" :value="item.value" />
-              <span>{{ item.label }}</span>
-            </label>
-          </section>
-
-          <section class="summary-card">
-            <div>总金额：￥{{ preview.total_amount }}</div>
-            <div class="address-tip">店内自助购物，当前订单不填写地址。</div>
-            <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-            <button class="primary-button" :disabled="submitting" @click="submitAndPay">
-              {{ submitting ? "处理中..." : "提交订单并支付" }}
-            </button>
-          </section>
-        </template>
+        <section class="summary-card">
+          <div>总金额：￥{{ preview.total_amount }}</div>
+          <div class="address-tip">店内自助购物，当前订单不填写地址。</div>
+          <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+          <button class="primary-button" :disabled="submitting" @click="submitAndPay">
+            {{ submitting ? "处理中..." : "提交订单并支付" }}
+          </button>
+        </section>
       </template>
-    </main>
+    </template>
   </div>
 </template>
 
@@ -77,7 +68,6 @@ onMounted(async () => {
   if (!authStore.isAuthenticated) {
     return;
   }
-
   loading.value = true;
   try {
     await cartStore.loadCheckoutPreview();
@@ -91,7 +81,6 @@ onMounted(async () => {
 async function submitAndPay() {
   errorMessage.value = "";
   submitting.value = true;
-
   try {
     const order = await createOrder();
     await payOrder(order.id, paymentMethod.value);
@@ -107,31 +96,10 @@ async function submitAndPay() {
 </script>
 
 <style scoped>
-.page-shell {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
 .page {
-  padding: 20px 16px 40px;
+  padding: 0 0 40px;
   box-sizing: border-box;
   font-family: sans-serif;
-}
-
-.topbar {
-  margin-bottom: 16px;
-}
-
-.brand {
-  font-size: 13px;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.page-title {
-  margin: 8px 0 0;
-  font-size: 26px;
-  color: #111827;
 }
 
 .summary-card,

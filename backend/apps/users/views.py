@@ -2,7 +2,8 @@ from django.contrib.auth import login
 from rest_framework import permissions, status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
-from rest_framework.views import APIView
+
+from apps.common.views import LoggedAPIView
 
 from .serializers import (
     CodeLoginSerializer,
@@ -20,7 +21,7 @@ def build_auth_payload(user):
     }
 
 
-class RegisterView(APIView):
+class RegisterView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -30,7 +31,7 @@ class RegisterView(APIView):
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
-class PasswordLoginView(APIView):
+class PasswordLoginView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -41,7 +42,7 @@ class PasswordLoginView(APIView):
         return Response(build_auth_payload(user))
 
 
-class CodeLoginView(APIView):
+class CodeLoginView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -52,7 +53,7 @@ class CodeLoginView(APIView):
         return Response(build_auth_payload(user))
 
 
-class ProfileView(APIView):
+class ProfileView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -65,7 +66,7 @@ class ProfileView(APIView):
         return Response(serializer.data)
 
 
-class AvatarUploadView(APIView):
+class AvatarUploadView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -79,7 +80,7 @@ class AvatarUploadView(APIView):
         return Response(UserSerializer(request.user).data)
 
 
-class PasswordUpdateView(APIView):
+class PasswordUpdateView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request):
@@ -92,4 +93,3 @@ class PasswordUpdateView(APIView):
         request.user.set_password(serializer.validated_data["new_password"])
         request.user.save(update_fields=["password", "updated_at"])
         return Response(status=status.HTTP_204_NO_CONTENT)
-

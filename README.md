@@ -15,9 +15,14 @@
 
 ## 启动方式
 
-- backend: `conda run -n shop python .\backend\manage.py runserver`
-- frontend mobile: `cd frontend/mobile && npm run dev`
-- frontend web: `cd frontend/web && npm run dev`
+- backend: `conda run -n shop python .\backend\manage.py runserver 127.0.0.1:18000`
+- frontend mobile: `cd frontend/mobile && npm run dev -- --host 127.0.0.1 --port 5173`
+- frontend web: `cd frontend/web && npm run dev -- --host 127.0.0.1 --port 5174`
+
+## 演示数据
+
+- 执行 `conda run -n shop python .\backend\manage.py migrate` 后，会自动写入默认演示分类、商品和库存数据
+- 商家商品管理页、库存页和用户端商品列表可直接使用这些演示数据
 
 ## 后端验证命令
 

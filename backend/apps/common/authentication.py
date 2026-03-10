@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework import authentication, exceptions
+
+from .origin import is_local_origin
 
 
 User = get_user_model()
@@ -33,3 +36,13 @@ class MockTokenAuthentication(authentication.BaseAuthentication):
             raise exceptions.AuthenticationFailed("User not found.") from exc
 
         return (user, token)
+
+
+class LocalDevSessionAuthentication(authentication.SessionAuthentication):
+    """Keep CSRF enforcement in prod, relax local origins in DEBUG."""
+
+    def enforce_csrf(self, request):
+        if settings.DEBUG and is_local_origin(request.META.get("HTTP_ORIGIN", "")):
+            return
+
+        super().enforce_csrf(request)

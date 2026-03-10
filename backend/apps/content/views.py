@@ -3,16 +3,16 @@ from django.db.models import Sum, Count
 from django.utils import timezone
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.common.permissions import IsMerchant
+from apps.common.views import LoggedAPIView
 from apps.orders.models import Order, OrderItem
 
 from .models import Announcement, Recommendation
 from .serializers import AnnouncementSerializer, RecommendationSerializer
 
 
-class HomeView(APIView):
+class HomeView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -34,7 +34,7 @@ class HomeView(APIView):
         )
 
 
-class AdminAnnouncementListCreateView(APIView):
+class AdminAnnouncementListCreateView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def get(self, request):
@@ -59,7 +59,7 @@ class AdminAnnouncementListCreateView(APIView):
         )
 
 
-class AdminAnnouncementDetailView(APIView):
+class AdminAnnouncementDetailView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def put(self, request, announcement_id):
@@ -83,7 +83,7 @@ class AdminAnnouncementDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminRecommendationListCreateView(APIView):
+class AdminRecommendationListCreateView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def get(self, request):
@@ -100,7 +100,7 @@ class AdminRecommendationListCreateView(APIView):
         )
 
 
-class AdminRecommendationDetailView(APIView):
+class AdminRecommendationDetailView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def put(self, request, recommendation_id):
@@ -116,7 +116,7 @@ class AdminRecommendationDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class AdminStatisticsOverviewView(APIView):
+class AdminStatisticsOverviewView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def get(self, request):
@@ -130,7 +130,7 @@ class AdminStatisticsOverviewView(APIView):
         )
 
 
-class AdminHotProductsView(APIView):
+class AdminHotProductsView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def get(self, request):

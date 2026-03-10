@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
+from apps.common.views import LoggedAPIView
 from apps.products.models import Product
 
 from .models import Cart, CartItem
@@ -19,7 +19,7 @@ def get_or_create_cart(user):
     return cart
 
 
-class CartView(APIView):
+class CartView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -27,7 +27,7 @@ class CartView(APIView):
         return Response(CartSerializer(cart).data)
 
 
-class CartItemListCreateView(APIView):
+class CartItemListCreateView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -50,7 +50,7 @@ class CartItemListCreateView(APIView):
         return Response(CartItemSerializer(cart_item).data, status=status.HTTP_200_OK)
 
 
-class CartItemDetailView(APIView):
+class CartItemDetailView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request, item_id):
@@ -75,7 +75,7 @@ class CartItemDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CartCheckoutView(APIView):
+class CartCheckoutView(LoggedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -89,4 +89,3 @@ class CartCheckoutView(APIView):
                 "total_amount": total_amount,
             }
         )
-

@@ -2,15 +2,15 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.common.permissions import IsMerchant
+from apps.common.views import LoggedAPIView
 
 from .models import Category, Product
 from .serializers import AdminProductSerializer, CategorySerializer, ProductSerializer
 
 
-class CategoryListView(APIView):
+class CategoryListView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, _request):
@@ -18,7 +18,7 @@ class CategoryListView(APIView):
         return Response(CategorySerializer(categories, many=True).data)
 
 
-class ProductListView(APIView):
+class ProductListView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -32,10 +32,30 @@ class ProductListView(APIView):
         if keyword:
             queryset = queryset.filter(Q(name__icontains=keyword) | Q(description__icontains=keyword))
 
-        return Response(ProductSerializer(queryset.order_by("id"), many=True).data)
+        queryset = queryset.order_by("id")
+
+        page = request.query_params.get("page")
+        size = request.query_params.get("size")
+        if page or size:
+            try:
+                page_num = int(page or 1)
+            except (TypeError, ValueError):
+                page_num = 1
+            try:
+                page_size = int(size or 10)
+            except (TypeError, ValueError):
+                page_size = 10
+
+            page_num = max(page_num, 1)
+            page_size = min(max(page_size, 1), 50)
+            start = (page_num - 1) * page_size
+            end = start + page_size
+            queryset = queryset[start:end]
+
+        return Response(ProductSerializer(queryset, many=True).data)
 
 
-class ProductDetailView(APIView):
+class ProductDetailView(LoggedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get(self, _request, product_id):
@@ -46,7 +66,7 @@ class ProductDetailView(APIView):
         return Response(ProductSerializer(product).data)
 
 
-class AdminProductListCreateView(APIView):
+class AdminProductListCreateView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def get(self, _request):
@@ -60,7 +80,7 @@ class AdminProductListCreateView(APIView):
         return Response(AdminProductSerializer(product).data, status=201)
 
 
-class AdminProductDetailView(APIView):
+class AdminProductDetailView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def put(self, request, product_id):
@@ -71,7 +91,7 @@ class AdminProductDetailView(APIView):
         return Response(serializer.data)
 
 
-class AdminProductOnShelfView(APIView):
+class AdminProductOnShelfView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def post(self, _request, product_id):
@@ -81,7 +101,7 @@ class AdminProductOnShelfView(APIView):
         return Response(AdminProductSerializer(product).data)
 
 
-class AdminProductOffShelfView(APIView):
+class AdminProductOffShelfView(LoggedAPIView):
     permission_classes = [IsMerchant]
 
     def post(self, _request, product_id):

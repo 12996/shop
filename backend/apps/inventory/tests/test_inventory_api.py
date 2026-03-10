@@ -15,10 +15,10 @@ class InventoryApiTest(TestCase):
             phone="13600000003",
             role="merchant",
         )
-        category = Category.objects.create(name="零食")
+        category = Category.objects.create(name="闆堕")
         self.product = Product.objects.create(
             category=category,
-            name="原味薯片",
+            name="鍘熷懗钖墖",
             price="6.00",
             status=Product.STATUS_ON_SHELF,
         )
@@ -34,9 +34,9 @@ class InventoryApiTest(TestCase):
         response = self.client.get("/api/admin/inventory")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]["product_name"], "原味薯片")
-        self.assertTrue(response.data[0]["is_alert"])
+        inventory_payload = next(item for item in response.data if item["product_id"] == self.product.id)
+        self.assertEqual(inventory_payload["product_name"], "鍘熷懗钖墖")
+        self.assertTrue(inventory_payload["is_alert"])
 
     def test_merchant_can_adjust_inventory(self):
         self.client.force_authenticate(user=self.merchant)
@@ -45,7 +45,7 @@ class InventoryApiTest(TestCase):
             f"/api/admin/inventory/{self.product.id}/adjust",
             {
                 "quantity": 9,
-                "remark": "手动补货",
+                "remark": "鎵嬪姩琛ヨ揣",
             },
             format="json",
         )

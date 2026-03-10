@@ -12,7 +12,9 @@ export type Product = {
   stock_quantity: number;
 };
 
-export function fetchProducts(params: { categoryId?: number | null; keyword?: string } = {}) {
+export function fetchProducts(
+  params: { categoryId?: number | null; keyword?: string; page?: number; size?: number } = {},
+) {
   const query = new URLSearchParams();
 
   if (params.categoryId) {
@@ -20,6 +22,12 @@ export function fetchProducts(params: { categoryId?: number | null; keyword?: st
   }
   if (params.keyword) {
     query.set("keyword", params.keyword);
+  }
+  if (params.page) {
+    query.set("page", String(params.page));
+  }
+  if (params.size) {
+    query.set("size", String(params.size));
   }
 
   const suffix = query.toString() ? `?${query}` : "";

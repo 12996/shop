@@ -1,0 +1,92 @@
+[2m21:17:39[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/api/http.ts (resolved id: F:/work/project/shop/frontend/mobile/src/api/http.ts) in F:/work/project/shop/frontend/mobile/src/api/auth.ts. Does the file exist?
+[2m21:17:39[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/api/http.ts (resolved id: F:/work/project/shop/frontend/mobile/src/api/http.ts) in F:/work/project/shop/frontend/mobile/src/api/auth.ts. Does the file exist?
+[2m21:17:39[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/api/http.ts (resolved id: F:/work/project/shop/frontend/mobile/src/api/http.ts) in F:/work/project/shop/frontend/mobile/src/api/auth.ts. Does the file exist?
+[2m21:17:39[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/api/http.ts (resolved id: F:/work/project/shop/frontend/mobile/src/api/http.ts) in F:/work/project/shop/frontend/mobile/src/api/auth.ts. Does the file exist?
+[2m21:17:39[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/api/http.ts (resolved id: F:/work/project/shop/frontend/mobile/src/api/http.ts) in F:/work/project/shop/frontend/mobile/src/api/auth.ts. Does the file exist?
+[2m21:34:52[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:34:54[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/cart/[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:34:56[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/orders[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:34:57[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:34:57[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:35:53[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:35:56[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/cart/[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:35:57[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:35:57[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:39:50[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:39:54[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:39:54[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:40:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/profile[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:40:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:40:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:41:55[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:41:55[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:42:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:42:02[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:42:56[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:43:00[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:43:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/home[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:43:01[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/categories[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:43:29[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login/password[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:43:36[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login/password[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:44:31[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login/password[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:44:33[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login/password[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:50:34[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/auth/login/password[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)
+[2m21:50:48[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /health[39m
+Error: connect ECONNREFUSED 127.0.0.1:18000
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1637:16)

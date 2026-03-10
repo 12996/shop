@@ -1,14 +1,14 @@
 from rest_framework import status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from apps.common.permissions import IsMerchant
+from apps.common.views import LoggedAPIView
 
 from .services import recognize_product
 
 
-class RecognizeView(APIView):
+class RecognizeView(LoggedAPIView):
     permission_classes = [IsMerchant]
     parser_classes = [MultiPartParser, FormParser]
 

@@ -1,64 +1,64 @@
 <template>
-  <div class="page-shell">
-    <main class="page">
-      <header class="topbar">
-        <div>
-          <div class="brand">无人超市</div>
-          <h1 class="page-title">商品列表</h1>
+  <div class="page">
+    <section class="search-box">
+      <input v-model.trim="keyword" type="text" placeholder="搜索商品名称" @keyup.enter="reloadProducts" />
+    </section>
+
+    <section class="category-strip">
+      <button class="category-pill" :class="{ active: !activeCategoryId }" @click="selectCategory(null)">全部</button>
+      <button
+        v-for="category in categories"
+        :key="category.id"
+        class="category-pill"
+        :class="{ active: activeCategoryId === category.id }"
+        @click="selectCategory(category.id)"
+      >
+        {{ category.name }}
+      </button>
+    </section>
+
+    <div v-if="loading" class="loading-bar">加载中...</div>
+    <section v-if="!loading && products.length === 0" class="state-card">未找到相关商品</section>
+
+    <section v-else class="product-list">
+      <article v-for="item in products" :key="item.id" class="product-card">
+        <div class="image">{{ item.main_image || item.name.slice(0, 2) }}</div>
+        <div class="name">{{ item.name }}</div>
+        <div class="price">￥{{ item.price }}</div>
+        <div class="stock" :class="stockClass(item.stock_quantity)">
+          {{ stockText(item.stock_quantity) }}
         </div>
-        <RouterLink class="cart-entry" to="/cart">购物车</RouterLink>
-      </header>
-
-      <section class="search-box">
-        <input v-model.trim="keyword" type="text" placeholder="搜索商品名称" @keyup.enter="loadProducts" />
-      </section>
-
-      <section class="category-strip">
-        <button class="category-pill" :class="{ active: !activeCategoryId }" @click="selectCategory(null)">
-          全部
+        <button class="action" :disabled="item.stock_quantity <= 0" @click="handleAddToCart(item.id, $event)">
+          {{ item.stock_quantity <= 0 ? "已售罄" : "加入购物车" }}
         </button>
-        <button
-          v-for="category in categories"
-          :key="category.id"
-          class="category-pill"
-          :class="{ active: activeCategoryId === category.id }"
-          @click="selectCategory(category.id)"
-        >
-          {{ category.name }}
-        </button>
-      </section>
+      </article>
+    </section>
 
-      <section v-if="loading" class="state-card">加载中...</section>
-      <section v-else-if="products.length === 0" class="state-card">未找到相关商品</section>
+    <div ref="loadMoreTrigger" class="load-more-trigger" />
+    <div v-if="loadingMore" class="loading-bar">正在加载更多...</div>
+    <div v-else-if="!hasMore && products.length > 0" class="end-text">没有更多商品了</div>
 
-      <section v-else class="product-list">
-        <article v-for="item in products" :key="item.id" class="product-card">
-          <div class="image">{{ item.main_image || item.name.slice(0, 2) }}</div>
-          <div class="name">{{ item.name }}</div>
-          <div class="price">￥{{ item.price }}</div>
-          <div class="stock" :class="stockClass(item.stock_quantity)">
-            {{ stockText(item.stock_quantity) }}
-          </div>
-          <button class="action" :disabled="item.stock_quantity <= 0" @click="handleAddToCart(item.id)">
-            {{ item.stock_quantity <= 0 ? "已售罄" : "加入购物车" }}
-          </button>
-        </article>
-      </section>
-    </main>
-
-    <MobileTabBar />
+    <div
+      v-if="feedbackMessage"
+      class="feedback-bubble"
+      :class="feedbackType"
+      :style="{ left: `${feedbackX}px`, top: `${feedbackY}px` }"
+    >
+      {{ feedbackMessage }}
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { RouterLink, useRoute, useRouter } from "vue-router";
+import { onBeforeUnmount, onMounted, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import { fetchCategories, type Category } from "../api/home";
 import { fetchProducts, type Product } from "../api/products";
-import MobileTabBar from "../components/MobileTabBar.vue";
 import { useAuthStore } from "../stores/auth";
 import { useCartStore } from "../stores/cart";
+
+const PAGE_SIZE = 8;
 
 const route = useRoute();
 const router = useRouter();
@@ -66,27 +66,95 @@ const authStore = useAuthStore();
 const cartStore = useCartStore();
 
 const loading = ref(false);
+const loadingMore = ref(false);
+const hasMore = ref(true);
+const page = ref(1);
 const keyword = ref(typeof route.query.keyword === "string" ? route.query.keyword : "");
 const activeCategoryId = ref<number | null>(
   typeof route.query.categoryId === "string" ? Number(route.query.categoryId) : null,
 );
 const categories = ref<Category[]>([]);
 const products = ref<Product[]>([]);
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+const feedbackMessage = ref("");
+const feedbackType = ref<"success" | "error">("success");
+const feedbackX = ref(0);
+const feedbackY = ref(0);
+
+let observer: IntersectionObserver | null = null;
+let feedbackTimer: ReturnType<typeof setTimeout> | null = null;
+type FeedbackAnchor = { x: number; y: number };
 
 onMounted(async () => {
   categories.value = await fetchCategories();
-  await loadProducts();
+  await reloadProducts();
+  setupObserver();
 });
 
-async function loadProducts() {
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+  if (feedbackTimer) {
+    clearTimeout(feedbackTimer);
+    feedbackTimer = null;
+  }
+});
+
+function setupObserver() {
+  if (!loadMoreTrigger.value) {
+    return;
+  }
+  observer = new IntersectionObserver((entries) => {
+    const [entry] = entries;
+    if (entry?.isIntersecting) {
+      loadMore();
+    }
+  });
+  observer.observe(loadMoreTrigger.value);
+}
+
+async function reloadProducts() {
   loading.value = true;
+  page.value = 1;
+  hasMore.value = true;
   try {
-    products.value = await fetchProducts({
+    const payload = await fetchProducts({
       categoryId: activeCategoryId.value,
-      keyword: keyword.value,
+      keyword: keyword.value || undefined,
+      page: page.value,
+      size: PAGE_SIZE,
     });
+    products.value = payload;
+    hasMore.value = payload.length === PAGE_SIZE;
+    page.value = 2;
   } finally {
     loading.value = false;
+  }
+}
+
+async function loadMore() {
+  if (loading.value || loadingMore.value || !hasMore.value) {
+    return;
+  }
+  loadingMore.value = true;
+  try {
+    const payload = await fetchProducts({
+      categoryId: activeCategoryId.value,
+      keyword: keyword.value || undefined,
+      page: page.value,
+      size: PAGE_SIZE,
+    });
+    if (payload.length === 0) {
+      hasMore.value = false;
+      return;
+    }
+    products.value = [...products.value, ...payload];
+    hasMore.value = payload.length === PAGE_SIZE;
+    page.value += 1;
+  } finally {
+    loadingMore.value = false;
   }
 }
 
@@ -99,16 +167,49 @@ async function selectCategory(categoryId: number | null) {
       ...(keyword.value ? { keyword: keyword.value } : {}),
     },
   });
-  await loadProducts();
+  await reloadProducts();
 }
 
-async function handleAddToCart(productId: number) {
+async function handleAddToCart(productId: number, event: MouseEvent) {
+  const anchor = resolveFeedbackAnchor(event);
   if (!authStore.isAuthenticated) {
+    showFeedback("请先登录", "error", anchor);
     await router.push("/login");
     return;
   }
+  try {
+    await cartStore.addItem(productId, 1);
+    showFeedback("已加入购物车", "success", anchor);
+  } catch {
+    showFeedback("加入购物车失败", "error", anchor);
+  }
+}
 
-  await cartStore.addItem(productId, 1);
+function resolveFeedbackAnchor(event?: MouseEvent): FeedbackAnchor {
+  if (event?.currentTarget instanceof HTMLElement) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: Math.max(rect.top - 12, 64),
+    };
+  }
+  return { x: window.innerWidth / 2, y: Math.max(window.innerHeight * 0.72, 120) };
+}
+
+function showFeedback(message: string, type: "success" | "error", anchor?: FeedbackAnchor) {
+  feedbackMessage.value = message;
+  feedbackType.value = type;
+  const target = anchor ?? resolveFeedbackAnchor();
+  feedbackX.value = target.x;
+  feedbackY.value = target.y;
+
+  if (feedbackTimer) {
+    clearTimeout(feedbackTimer);
+  }
+  feedbackTimer = setTimeout(() => {
+    feedbackMessage.value = "";
+    feedbackTimer = null;
+  }, 1200);
 }
 
 function stockText(stockQuantity: number) {
@@ -133,40 +234,10 @@ function stockClass(stockQuantity: number) {
 </script>
 
 <style scoped>
-.page-shell {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
 .page {
-  padding: 20px 16px 88px;
+  padding: 0 0 88px;
   box-sizing: border-box;
   font-family: sans-serif;
-}
-
-.topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.brand {
-  font-size: 13px;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.page-title {
-  margin: 8px 0 0;
-  font-size: 26px;
-  color: #111827;
-}
-
-.cart-entry {
-  color: #2563eb;
-  text-decoration: none;
-  font-size: 14px;
 }
 
 .search-box input {
@@ -192,11 +263,25 @@ function stockClass(stockQuantity: number) {
   border-radius: 999px;
   background: #e5e7eb;
   color: #4b5563;
+  font-weight: 600;
 }
 
 .category-pill.active {
   background: #2563eb;
   color: #fff;
+}
+
+.loading-bar {
+  margin: 10px 0;
+  min-height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #dbeafe, #eff6ff);
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .state-card {
@@ -273,5 +358,51 @@ function stockClass(stockQuantity: number) {
 .action:disabled {
   background: #d1d5db;
   color: #6b7280;
+}
+
+.load-more-trigger {
+  height: 1px;
+}
+
+.end-text {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.feedback-bubble {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  z-index: 40;
+  pointer-events: none;
+  animation: bubble-up 1.2s ease forwards;
+}
+
+.feedback-bubble.success {
+  background: rgba(15, 23, 42, 0.88);
+}
+
+.feedback-bubble.error {
+  background: rgba(220, 38, 38, 0.92);
+}
+
+@keyframes bubble-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -125%);
+  }
 }
 </style>

@@ -8,6 +8,19 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-secret-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
+# Frontend dev servers (Vite) that are allowed to pass Django CSRF origin checks.
+_default_csrf_origins = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5174",
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", ",".join(_default_csrf_origins)).split(",")
+    if origin.strip()
+]
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -16,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "apps.common.apps.CommonConfig",
     "apps.users",
     "apps.products",
     "apps.inventory",
@@ -29,8 +43,9 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    "apps.common.middleware.LocalDevCsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.common.middleware.RequestLoggingMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -95,7 +110,35 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "apps.common.authentication.MockTokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        "apps.common.authentication.LocalDevSessionAuthentication",
         "rest_framework.authentication.BasicAuthentication",
     ],
+}
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "standard": {
+            "format": "%(asctime)s %(levelname)s %(name)s %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "standard",
+        },
+    },
+    "loggers": {
+        "apps.api": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_API_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "apps.lifecycle": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_STARTUP_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
 }

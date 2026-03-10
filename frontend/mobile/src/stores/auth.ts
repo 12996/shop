@@ -1,7 +1,14 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 
-import { fetchProfile, loginWithCode, loginWithPassword, type AuthUser } from "../api/auth";
+import {
+  fetchProfile,
+  loginWithCode,
+  loginWithPassword,
+  register,
+  type AuthUser,
+  type RegisterPayload,
+} from "../api/auth";
 
 const TOKEN_KEY = "mobile-auth-token";
 const USER_KEY = "mobile-auth-user";
@@ -66,6 +73,21 @@ export const useAuthStore = defineStore("mobile-auth", () => {
     }
   }
 
+  async function registerAndLogin(payload: RegisterPayload) {
+    loading.value = true;
+    try {
+      await register(payload);
+      const authPayload = await loginWithPassword({
+        username: payload.username,
+        password: payload.password,
+      });
+      persistSession(authPayload.token, authPayload.user);
+      return authPayload.user;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function refreshProfile() {
     if (!token.value) {
       return null;
@@ -92,6 +114,7 @@ export const useAuthStore = defineStore("mobile-auth", () => {
     isAuthenticated,
     loginByPassword,
     loginByCode,
+    registerAndLogin,
     refreshProfile,
     logout,
   };

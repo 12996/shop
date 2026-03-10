@@ -1,78 +1,73 @@
 <template>
-  <div class="page-shell">
-    <main class="page">
-      <header class="topbar">
-        <div>
-          <div class="brand">无人超市</div>
-          <h1 class="page-title">首页</h1>
+  <div class="page">
+    <section class="search-box">
+      <input v-model.trim="keyword" type="text" placeholder="搜索商品或分类" @keyup.enter="goToProducts" />
+    </section>
+
+    <section class="notice-card">
+      <div class="section-header">
+        <span>公告</span>
+        <RouterLink to="/orders">我的订单</RouterLink>
+      </div>
+      <p v-if="announcement">{{ announcement.content }}</p>
+      <p v-else>暂无公告</p>
+    </section>
+
+    <section class="recommend-section">
+      <div class="section-header">
+        <span>推荐商品</span>
+        <RouterLink to="/products">查看全部</RouterLink>
+      </div>
+
+      <div v-if="loading" class="state-card">加载中...</div>
+      <div v-else-if="recommendations.length === 0" class="state-card">暂无推荐商品</div>
+
+      <div v-else class="carousel-wrap">
+        <button class="nav-btn" type="button" @click="prevSlide">&lt;</button>
+        <div class="carousel-window">
+          <div class="carousel-track" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
+            <article v-for="item in recommendations" :key="item.id" class="product-card">
+              <div class="product-image">{{ item.product_image || item.product_name.slice(0, 2) }}</div>
+              <div class="product-name">{{ item.product_name }}</div>
+              <div class="product-price">￥{{ item.product_price }}</div>
+              <button class="add-button" @click="handleAddToCart(item.product, $event)">加入购物车</button>
+            </article>
+          </div>
         </div>
-        <RouterLink class="order-entry" to="/orders">我的订单</RouterLink>
-      </header>
+        <button class="nav-btn" type="button" @click="nextSlide">&gt;</button>
+      </div>
 
-      <section class="search-box">
-        <input v-model.trim="keyword" type="text" placeholder="搜索商品或分类" @keyup.enter="goToProducts()" />
-      </section>
+      <div v-if="recommendations.length > 1" class="dots">
+        <button
+          v-for="(_, index) in recommendations"
+          :key="index"
+          class="dot"
+          :class="{ active: index === currentSlide }"
+          type="button"
+          @click="goSlide(index)"
+        />
+      </div>
+    </section>
 
-      <section class="notice-card">
-        <div class="section-header">
-          <span>公告</span>
-        </div>
-        <p v-if="announcement">{{ announcement.content }}</p>
-        <p v-else>暂无公告</p>
-      </section>
+    <HomeProductSection />
 
-      <section class="category-section">
-        <div class="section-header">
-          <span>分类入口</span>
-        </div>
-        <div class="category-grid">
-          <button
-            v-for="category in categories"
-            :key="category.id"
-            class="category-chip"
-            @click="goToProducts(category.id)"
-          >
-            {{ category.name }}
-          </button>
-        </div>
-      </section>
-
-      <section class="recommend-section">
-        <div class="section-header">
-          <span>推荐商品</span>
-          <RouterLink to="/products">查看全部</RouterLink>
-        </div>
-
-        <div v-if="loading" class="state-card">加载中...</div>
-        <div v-else-if="recommendations.length === 0" class="state-card">暂无推荐商品</div>
-
-        <div v-else class="product-list">
-          <article v-for="item in recommendations" :key="item.id" class="product-card">
-            <div class="product-image">{{ item.product_image || item.product_name.slice(0, 2) }}</div>
-            <div class="product-name">{{ item.product_name }}</div>
-            <div class="product-price">￥{{ item.product_price }}</div>
-            <button class="add-button" @click="handleAddToCart(item.product)">加入购物车</button>
-          </article>
-        </div>
-      </section>
-    </main>
-
-    <MobileTabBar />
+    <div
+      v-if="feedbackMessage"
+      class="feedback-bubble"
+      :class="feedbackType"
+      :style="{ left: `${feedbackX}px`, top: `${feedbackY}px` }"
+    >
+      {{ feedbackMessage }}
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { RouterLink, useRouter } from "vue-router";
 
-import {
-  fetchCategories,
-  fetchHomeData,
-  type Announcement,
-  type Category,
-  type Recommendation,
-} from "../api/home";
-import MobileTabBar from "../components/MobileTabBar.vue";
+import HomeProductSection from "../components/HomeProductSection.vue";
+import { fetchHomeData, type Announcement, type Recommendation } from "../api/home";
 import { useAuthStore } from "../stores/auth";
 import { useCartStore } from "../stores/cart";
 
@@ -83,77 +78,132 @@ const cartStore = useCartStore();
 const loading = ref(false);
 const keyword = ref("");
 const announcement = ref<Announcement | null>(null);
-const categories = ref<Category[]>([]);
 const recommendations = ref<Recommendation[]>([]);
+const currentSlide = ref(0);
+const feedbackMessage = ref("");
+const feedbackType = ref<"success" | "error">("success");
+const feedbackX = ref(0);
+const feedbackY = ref(0);
+
+let timer: ReturnType<typeof setInterval> | null = null;
+let feedbackTimer: ReturnType<typeof setTimeout> | null = null;
+type FeedbackAnchor = { x: number; y: number };
 
 onMounted(async () => {
   loading.value = true;
   try {
-    const [homePayload, categoryPayload] = await Promise.all([fetchHomeData(), fetchCategories()]);
+    const homePayload = await fetchHomeData();
     announcement.value = homePayload.announcement;
     recommendations.value = homePayload.recommendations;
-    categories.value = categoryPayload;
+    startAutoPlay();
   } finally {
     loading.value = false;
   }
 });
 
-function goToProducts(categoryId?: number) {
-  router.push({
+onBeforeUnmount(() => {
+  stopAutoPlay();
+  if (feedbackTimer) {
+    clearTimeout(feedbackTimer);
+    feedbackTimer = null;
+  }
+});
+
+function startAutoPlay() {
+  stopAutoPlay();
+  if (recommendations.value.length <= 1) {
+    return;
+  }
+  timer = setInterval(() => {
+    nextSlide();
+  }, 3000);
+}
+
+function stopAutoPlay() {
+  if (!timer) {
+    return;
+  }
+  clearInterval(timer);
+  timer = null;
+}
+
+function goSlide(index: number) {
+  currentSlide.value = index;
+}
+
+function prevSlide() {
+  const total = recommendations.value.length;
+  if (!total) {
+    return;
+  }
+  currentSlide.value = (currentSlide.value - 1 + total) % total;
+}
+
+function nextSlide() {
+  const total = recommendations.value.length;
+  if (!total) {
+    return;
+  }
+  currentSlide.value = (currentSlide.value + 1) % total;
+}
+
+async function goToProducts() {
+  await router.push({
     path: "/products",
     query: {
-      ...(categoryId ? { categoryId: String(categoryId) } : {}),
       ...(keyword.value ? { keyword: keyword.value } : {}),
     },
   });
 }
 
-async function handleAddToCart(productId: number) {
+async function handleAddToCart(productId: number, event: MouseEvent) {
+  const anchor = resolveFeedbackAnchor(event);
   if (!authStore.isAuthenticated) {
+    showFeedback("请先登录", "error", anchor);
     await router.push("/login");
     return;
   }
+  try {
+    await cartStore.addItem(productId, 1);
+    showFeedback("已加入购物车", "success", anchor);
+  } catch {
+    showFeedback("加入购物车失败", "error", anchor);
+  }
+}
 
-  await cartStore.addItem(productId, 1);
+function resolveFeedbackAnchor(event?: MouseEvent): FeedbackAnchor {
+  if (event?.currentTarget instanceof HTMLElement) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2,
+      y: Math.max(rect.top - 12, 64),
+    };
+  }
+  return { x: window.innerWidth / 2, y: Math.max(window.innerHeight * 0.72, 120) };
+}
+
+function showFeedback(message: string, type: "success" | "error", anchor?: FeedbackAnchor) {
+  feedbackMessage.value = message;
+  feedbackType.value = type;
+  const target = anchor ?? resolveFeedbackAnchor();
+  feedbackX.value = target.x;
+  feedbackY.value = target.y;
+
+  if (feedbackTimer) {
+    clearTimeout(feedbackTimer);
+  }
+  feedbackTimer = setTimeout(() => {
+    feedbackMessage.value = "";
+    feedbackTimer = null;
+  }, 1200);
 }
 </script>
 
 <style scoped>
-.page-shell {
-  min-height: 100vh;
-  background: #f8fafc;
-}
-
 .page {
-  padding: 20px 16px 88px;
+  padding: 0 0 88px;
   box-sizing: border-box;
   font-family: sans-serif;
-}
-
-.topbar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.brand {
-  font-size: 13px;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.page-title {
-  margin: 8px 0 0;
-  font-size: 26px;
-  color: #111827;
-}
-
-.order-entry,
-.section-header a {
-  color: #2563eb;
-  text-decoration: none;
-  font-size: 14px;
 }
 
 .search-box input {
@@ -166,7 +216,6 @@ async function handleAddToCart(productId: number) {
 }
 
 .notice-card,
-.category-section,
 .recommend-section {
   margin-top: 16px;
   padding: 16px;
@@ -184,44 +233,54 @@ async function handleAddToCart(productId: number) {
   font-weight: 600;
 }
 
+.section-header a {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+}
+
 .notice-card p {
   margin: 0;
   color: #4b5563;
   line-height: 1.5;
 }
 
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.category-chip {
-  min-height: 40px;
-  border: none;
-  border-radius: 12px;
-  background: #eff6ff;
-  color: #1d4ed8;
-}
-
-.product-list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.product-card,
 .state-card {
   padding: 12px;
   border-radius: 14px;
   background: #f8fafc;
 }
 
+.carousel-wrap {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  gap: 8px;
+  align-items: center;
+}
+
+.carousel-window {
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.35s ease;
+}
+
+.product-card {
+  width: 100%;
+  flex: 0 0 100%;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  box-sizing: border-box;
+}
+
 .product-image {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 88px;
+  min-height: 120px;
   border-radius: 12px;
   background: #dbeafe;
   color: #1d4ed8;
@@ -249,5 +308,68 @@ async function handleAddToCart(productId: number) {
   border-radius: 10px;
   background: #2563eb;
   color: #fff;
+}
+
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.dots {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.dot.active {
+  background: #2563eb;
+}
+
+.feedback-bubble {
+  position: fixed;
+  transform: translate(-50%, -100%);
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 12px;
+  z-index: 40;
+  pointer-events: none;
+  animation: bubble-up 1.2s ease forwards;
+}
+
+.feedback-bubble.success {
+  background: rgba(15, 23, 42, 0.88);
+}
+
+.feedback-bubble.error {
+  background: rgba(220, 38, 38, 0.92);
+}
+
+@keyframes bubble-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -90%);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -100%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -125%);
+  }
 }
 </style>
